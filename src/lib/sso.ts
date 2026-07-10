@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { importSPKI, jwtVerify, decodeJwt } from 'jose'
 
 const PUBLIC_KEY_URL = import.meta.env.VITE_V3_PUBLIC_KEY_URL
@@ -6,10 +7,10 @@ const ORG_ID = import.meta.env.VITE_V3_ORGANIZATION_ID
 const CONFIRM_URL = import.meta.env.VITE_V3_CONFIRM_URL
 const AUDIENCE = `${APP_ID}:${ORG_ID}`
 
-let cachedKey: CryptoKey | null = null
+let cachedKey: Awaited<ReturnType<typeof importSPKI>> | null = null
 let keyFetchedAt = 0
 
-async function getPublicKey(): Promise<CryptoKey> {
+async function getPublicKey() {
   if (cachedKey && Date.now() - keyFetchedAt < 86_400_000) return cachedKey
   const res = await fetch(PUBLIC_KEY_URL)
   const { public_key } = (await res.json()) as { public_key: string }

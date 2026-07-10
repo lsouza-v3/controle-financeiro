@@ -16,7 +16,7 @@ export function Dashboard() {
   const session = getSession()
   const [transacoes, setTransacoes] = useState<Transacao[]>([])
   const [formData, setFormData] = useState({
-    tipo: 'entrada' as const,
+    tipo: 'entrada' as 'entrada' | 'saida',
     descricao: '',
     valor: '',
     data: new Date().toISOString().split('T')[0],
@@ -122,6 +122,7 @@ export function Dashboard() {
                 onChange={(e) =>
                   setFormData({ ...formData, tipo: e.target.value as 'entrada' | 'saida' })
                 }
+                required
               >
                 <option value="entrada">Entrada</option>
                 <option value="saida">Saída</option>
