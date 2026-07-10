@@ -80,6 +80,45 @@ src/
 - Validação de `organization_id` no JWT
 - localStorage para sessão (considerar httpOnly cookies para dados sensíveis)
 
+## Deployment
+
+Este projeto usa **GitHub Actions** para CI/CD automático com **GitHub Pages**.
+
+### Arquivos importantes
+
+- `.github/workflows/deploy.yml` — workflow que compila e faz deploy automático
+- `vite.config.ts` — configuração de build para produção
+- `.env.example` — template de variáveis (commitado, sem valores reais)
+- `package-lock.json` — lock file com versões exatas das dependências
+
+### Como funciona o deploy
+
+1. Você faz `git push origin main`
+2. GitHub Actions executa o workflow `.github/workflows/deploy.yml`
+3. Node.js instala dependências (`npm ci` usando `package-lock.json`)
+4. Vite compila React para arquivos estáticos (`npm run build`)
+5. `peaceiris/actions-gh-pages` publica em `gh-pages` branch
+6. GitHub Pages serve o site em `https://lsouza-v3.github.io/controle-financeiro/`
+
+### Variáveis de ambiente no CI/CD
+
+As variáveis `VITE_*` são configuradas como **GitHub Secrets** (não no `.env`):
+- `VITE_V3_BOARD_APP_ID`
+- `VITE_V3_ORGANIZATION_ID`
+- `VITE_V3_PUBLIC_KEY_URL`
+- `VITE_V3_CONFIRM_URL`
+
+O workflow as injeta durante o build (`.github/workflows/deploy.yml` linha 28-33).
+
+### Por que `package-lock.json` é crítico
+
+O `npm ci` (usado no CI/CD) **requer** `package-lock.json` para:
+- Instalar **exatamente as mesmas versões** que você tem localmente
+- Evitar surpresas de dependências incompatíveis em produção
+- Garantir builds reproduzíveis
+
+**Sempre commit `package-lock.json` junto com qualquer mudança em `package.json`.**
+
 ## Licença
 
 Privado

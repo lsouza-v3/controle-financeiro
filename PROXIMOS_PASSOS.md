@@ -101,15 +101,82 @@ Sua URL será: `https://lsouza-v3.github.io/controle-financeiro/`
 | `/auth/callback` retorna 404 | Arquivo `dist/index.html` não está sendo servido | Confirme que o GitHub Pages está habilitado e apontando para o branch `gh-pages` |
 | Build falha no GitHub Actions | Erro ao compilar TypeScript ou instalar dependências | Abra o log do workflow (aba Actions) e verifique qual comando falhou |
 
-### Diagnóstico rápido
+### Diagnóstico rápido — App não carrega no browser
 
-Se o app não carrega:
+Se o app não carrega após o deploy:
 1. Acesse diretamente `https://lsouza-v3.github.io/controle-financeiro/` no navegador
 2. Abra o DevTools (F12) → aba **Console**
 3. Procure por erros relacionados a:
    - `VITE_V3_BOARD_APP_ID is undefined` — secret não foi configurado
    - `Failed to fetch public key` — problema com `VITE_V3_PUBLIC_KEY_URL`
    - `Unexpected redirect` — problema no flow de autenticação
+
+### Erros comuns no GitHub Actions
+
+#### ❌ Erro: "Dependencies lock file is not found"
+
+**Log:**
+```
+Error: Dependencies lock file is not found in /home/runner/work/controle-financeiro/controle-financeiro.
+Supported file patterns: package-lock.json,npm-shrinkwrap.json,yarn.lock
+```
+
+**Causa:** O arquivo `package-lock.json` não foi commitado. Esse arquivo é gerado automaticamente quando você roda `npm install` localmente e é essencial para o CI/CD funcionar.
+
+**Solução:**
+```bash
+# Localmente, execute:
+npm install
+
+# Isso gera o arquivo package-lock.json
+
+git add package-lock.json
+git commit -m "Add package-lock.json"
+git push origin main
+```
+
+**Por que o lock file é importante:**
+- Garante que todos (você, CI/CD, outros devs) usam **exatamente as mesmas versões** das dependências
+- Sem o lock file, `npm install` pode instalar versões diferentes em diferentes máquinas
+- O GitHub Actions (`npm ci`) **requer** o lock file para garantir builds reproduzíveis
+
+---
+
+#### ⚠️ Aviso: "Node 20 is being deprecated"
+
+**Log:**
+```
+Node 20 is being deprecated. This workflow is running with Node 24 by default.
+If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true
+```
+
+**Causa:** O GitHub Actions usa Node 24 por padrão (mais novo), mas o workflow estava configurado para Node 20 (mais antigo).
+
+**Solução:** O workflow foi atualizado para Node 24 automaticamente. Se você ainda vê esse aviso:
+
+1. No repositório → `.github/workflows/deploy.yml`
+2. Procure pela linha com `node-version`
+3. Altere de `'20'` para `'24'` (ou a versão LTS mais recente)
+
+```yaml
+- uses: actions/setup-node@v4
+  with:
+    node-version: '24'  # ← Altere para a versão mais recente
+    cache: 'npm'
+```
+
+**Será atualizado para:**
+```bash
+git add .github/workflows/deploy.yml
+git commit -m "Update Node.js to version 24 in GitHub Actions"
+git push origin main
+```
+
+**Por que isso acontece:**
+- GitHub descontinua versões antigas do Node.js periodicamente
+- Node 20 chegou ao fim de sua manutenção em April 2025
+- Node 24 é a versão LTS (Long Term Support) recomendada
+- Usar versões novas garante segurança e performance
 
 ## Próximas atualizações
 
